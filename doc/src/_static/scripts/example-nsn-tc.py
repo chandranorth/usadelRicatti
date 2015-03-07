@@ -1,0 +1,1 @@
+../../../../scripts/example-nsn-tc.py

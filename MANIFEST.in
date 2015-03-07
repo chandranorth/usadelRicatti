@@ -1,0 +1,6 @@
+recursive-include src/usadel1 *.pyf
+recursive-include doc *.py *.rst *.png Makefile
+recursive-include doc/html *.html *.json *.js *.css
+include scripts/*.py scripts/*.m
+include tests/*.py tests/*.dat
+include install.bat

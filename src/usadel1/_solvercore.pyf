@@ -1,0 +1,246 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module _solvercore ! in 
+    interface  ! in :_solvercore
+        subroutine spectral2_set_params(nw,nt,w_length,w_conduct,w_inel,w_sf,w_phase_jump,t_delta,t_phase,t_inel,t_sf,t_t,t_mu) ! in :_solvercore:solvercore.f90
+            use params
+            use error
+            integer optional,intent(in),check(len(w_length)>=nw),depend(w_length) :: nw=len(w_length)
+            integer optional,intent(in),check(len(t_delta)>=nt),depend(t_delta) :: nt=len(t_delta)
+            double precision dimension(nw),intent(in) :: w_length
+            double precision dimension(nw),intent(in),depend(nw) :: w_conduct
+            double precision dimension(nw),intent(in),depend(nw) :: w_inel
+            double precision dimension(nw),intent(in),depend(nw) :: w_sf
+            double precision dimension(nw),intent(in),depend(nw) :: w_phase_jump
+            double precision dimension(nt),intent(in) :: t_delta
+            double precision dimension(nt),intent(in),depend(nt) :: t_phase
+            double precision dimension(nt),intent(in),depend(nt) :: t_inel
+            double precision dimension(nt),intent(in),depend(nt) :: t_sf
+            double precision dimension(nt),intent(in),depend(nt) :: t_t
+            double precision dimension(nt),intent(in),depend(nt) :: t_mu
+        end subroutine spectral2_set_params
+        subroutine spectral2_set_delta(nw,nx,x,w_delta,w_phase) ! in :_solvercore:solvercore.f90
+            use params
+            use error
+            integer optional,intent(in),check(shape(w_delta,1)==nw),depend(w_delta) :: nw=shape(w_delta,1)
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw),intent(in),depend(nx) :: w_delta
+            double precision dimension(nx,nw),intent(in),depend(nx,nw) :: w_phase
+        end subroutine spectral2_set_delta
+        subroutine spectral2_set_kinetic(maxne,nx,nw,e,x,w_dl,w_dt,w_tt,w_js,w_ddl,w_ddt,w_dtt,w_djs,w_ctl,w_ctt) ! in :_solvercore:solvercore.f90
+            use params
+            use error
+            integer optional,intent(in),check(len(e)>=maxne),depend(e) :: maxne=len(e)
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer optional,intent(in),check(shape(w_dl,1)==nw),depend(w_dl) :: nw=shape(w_dl,1)
+            double complex dimension(maxne),intent(in) :: e
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,maxne) :: w_dl
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_dt
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_tt
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_js
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_ddl
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_ddt
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_dtt
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_djs
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_ctl
+            double precision dimension(nx,nw,maxne),intent(in),depend(nx,nw,maxne) :: w_ctt
+        end subroutine spectral2_set_kinetic
+        subroutine spectral2_sp_initialize(nw,mstar_,w_type,bctype_new,bcdata_new,bcconnect_new) ! in :_solvercore:solvercore.f90
+            use params
+            use sp_equations
+            use error
+            integer optional,intent(in),check(len(w_type)>=nw),depend(w_type) :: nw=len(w_type)
+            integer optional,intent(in),check(len(bctype_new)>=mstar_),depend(bctype_new) :: mstar_=len(bctype_new)
+            integer dimension(nw),intent(in) :: w_type
+            integer dimension(mstar_),intent(in) :: bctype_new
+            double precision dimension(mstar_*16),intent(in),depend(nw,mstar_) :: bcdata_new
+            integer dimension(mstar_*(nw+1)),intent(in),depend(nw,mstar_) :: bcconnect_new
+        end subroutine spectral2_sp_initialize
+        subroutine spectral2_kin_initialize(nw,mstar_,w_type,bctype_new,bcdata_new,bcconnect_new,nrec) ! in :_solvercore:solvercore.f90
+            use kin_equations
+            use params
+            use error
+            integer optional,intent(in),check(len(w_type)>=nw),depend(w_type) :: nw=len(w_type)
+            integer optional,intent(in),check(len(bctype_new)>=mstar_),depend(bctype_new) :: mstar_=len(bctype_new)
+            integer dimension(nw),intent(in) :: w_type
+            integer dimension(mstar_),intent(in) :: bctype_new
+            double precision dimension(mstar_*16),intent(in),depend(nw,mstar_) :: bcdata_new
+            integer dimension(mstar_*(nw+1)),intent(in),depend(nw,mstar_) :: bcconnect_new
+            integer intent(in) :: nrec
+        end subroutine spectral2_kin_initialize
+        subroutine spectral2_sp_solve(ne,nx,nw,ee,x,a,b,da,db) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use params
+            use sp_equations
+            use error
+            integer optional,intent(in),check(len(ee)>=ne),depend(ee) :: ne=len(ee)
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer optional,intent(in),check(shape(a,1)==nw),depend(a) :: nw=shape(a,1)
+            double complex dimension(ne),intent(in) :: ee
+            double precision dimension(nx),intent(in) :: x
+            double complex dimension(nx,nw,ne),intent(inout,out),depend(nx,ne) :: a
+            double complex dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: b
+            double complex dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: da
+            double complex dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: db
+        end subroutine spectral2_sp_solve
+        subroutine spectral2_kin_solve(ne,nx,nw,e,x,fl,ft,dfl,dft,jl,jt) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_equations
+            use params
+            use error
+            integer optional,intent(in),check(len(e)>=ne),depend(e) :: ne=len(e)
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer optional,intent(in),check(shape(fl,1)==nw),depend(fl) :: nw=shape(fl,1)
+            double precision dimension(ne),intent(in) :: e
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,ne) :: fl
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: ft
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: dfl
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: dft
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: jl
+            double precision dimension(nx,nw,ne),intent(inout,out),depend(nx,nw,ne) :: jt
+        end subroutine spectral2_kin_solve
+        subroutine spectral2_set_solvers(sp_type,kin_type,sp_tol,kin_tol) ! in :_solvercore:solvercore.f90
+            use params
+            use error
+            integer intent(in) :: sp_type
+            integer intent(in) :: kin_type
+            double precision :: sp_tol
+            double precision :: kin_tol
+        end subroutine spectral2_set_solvers
+        subroutine spectral2_get_error(errmsg_,errorflag_,warnmsg_,warningflag_,nwarnings_) ! in :_solvercore:solvercore.f90
+            use error
+            character*380 intent(out) :: errmsg_
+            integer intent(out) :: errorflag_
+            character*380 intent(out) :: warnmsg_
+            integer intent(out) :: warningflag_
+            integer intent(out) :: nwarnings_
+        end subroutine spectral2_get_error
+        subroutine sp_solve_1(ok) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve
+            logical intent(out) :: ok
+        end subroutine sp_solve_1
+        subroutine sp_solve_2(ok) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve2
+            logical intent(out) :: ok
+        end subroutine sp_solve_2
+        subroutine sp_init_1 ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve
+        end subroutine sp_init_1
+        subroutine sp_init_2 ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve2
+        end subroutine sp_init_2
+        subroutine sp_get_vars_1(nx,nw,x,a,da,b,db) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: a
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: da
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: b
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: db
+        end subroutine sp_get_vars_1
+        subroutine sp_get_vars_2(nx,nw,x,a,da,b,db) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve2
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: a
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: da
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: b
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: db
+        end subroutine sp_get_vars_2
+        subroutine sp_set_vars_2(nx,nw,x,a,da,b,db) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use sp_solve2
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: a
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: da
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: b
+            double complex dimension(nx,nw),intent(out),depend(nx,nw) :: db
+        end subroutine sp_set_vars_2
+        subroutine kin_solve_1(ok) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve
+            logical intent(out) :: ok
+        end subroutine kin_solve_1
+        subroutine kin_solve_2(ok) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve2
+            logical intent(out) :: ok
+        end subroutine kin_solve_2
+        subroutine kin_solve_3(ok) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve3
+            logical intent(out) :: ok
+        end subroutine kin_solve_3
+        subroutine kin_init_1(nrec) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve
+            integer intent(in) :: nrec
+        end subroutine kin_init_1
+        subroutine kin_init_2(nrec) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve2
+            integer intent(in) :: nrec
+        end subroutine kin_init_2
+        subroutine kin_init_3(nrec) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve3
+            integer intent(in) :: nrec
+        end subroutine kin_init_3
+        subroutine kin_get_vars_1(nx,nw,x,fl,dfl,ft,dft,jl,jt) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: fl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dfl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: ft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jt
+        end subroutine kin_get_vars_1
+        subroutine kin_get_vars_2(nx,nw,x,fl,dfl,ft,dft,jl,jt) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve2
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: fl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dfl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: ft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jt
+        end subroutine kin_get_vars_2
+        subroutine kin_get_vars_3(nx,nw,x,fl,dfl,ft,dft,jl,jt) ! in :_solvercore:solvercore.f90
+            use miscmath
+            use kin_solve3
+            integer optional,intent(in),check(len(x)>=nx),depend(x) :: nx=len(x)
+            integer intent(in) :: nw
+            double precision dimension(nx),intent(in) :: x
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: fl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dfl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: ft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: dft
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jl
+            double precision dimension(nx,nw),intent(out),depend(nx,nw) :: jt
+        end subroutine kin_get_vars_3
+    end interface 
+end python module _solvercore
+
+! This file was auto-generated with f2py (version:2_6116).
+! See http://cens.ioc.ee/projects/f2py2e/
